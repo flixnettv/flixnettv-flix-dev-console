@@ -1,0 +1,288 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap');
+
+:root {
+  font-family: Inter, 'Segoe UI', Tahoma, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f1115;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 0.65rem;
+}
+
+.app.dark {
+  background: radial-gradient(1200px 800px at 50% -20%, #1c2340, #0f1115 60%);
+  color: #f3f5f8;
+}
+
+.app.light {
+  background: #edf0f5;
+  color: #11131a;
+}
+
+.app-shell {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+}
+
+.topbar,
+.register-box,
+.bridge-box,
+.chat-shell {
+  border-radius: 20px;
+  padding: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.dark .topbar,
+.dark .register-box,
+.dark .bridge-box,
+.dark .chat-shell {
+  background: #171a20;
+  border: 1px solid #2b303b;
+}
+
+.light .topbar,
+.light .register-box,
+.light .bridge-box,
+.light .chat-shell {
+  background: #fff;
+  border: 1px solid #d0d6e0;
+}
+
+.topbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.title-wrap h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.title-wrap p {
+  margin: 0.35rem 0 0;
+  opacity: 0.85;
+  font-size: 0.92rem;
+}
+
+.auth-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.65rem;
+}
+
+label {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid #434b5c;
+  padding: 0.64rem 0.75rem;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+
+.register-head strong {
+  font-size: 1.05rem;
+}
+
+.register-head p {
+  margin: 0.2rem 0 0.6rem;
+  opacity: 0.85;
+  font-size: 0.9rem;
+}
+
+.register-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+}
+
+.register-form button,
+.connect,
+.send-btn {
+  border: none;
+  font-weight: 800;
+  color: #0d1628;
+  background: linear-gradient(145deg, #78a9ff, #8be7c0);
+}
+
+.status-msg,
+.success,
+.bridge-box h2 {
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+}
+
+.success {
+  color: #66df9d;
+}
+
+.grid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: 1fr;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+}
+
+.checkbox input {
+  width: auto;
+}
+
+.checkbox small {
+  display: block;
+  opacity: 0.8;
+}
+
+.connect,
+button {
+.connect {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.messages {
+  min-height: 280px;
+  max-height: 52vh;
+  overflow: auto;
+  display: grid;
+  gap: 0.55rem;
+  padding-bottom: 0.3rem;
+}
+
+.msg {
+  padding: 0.68rem;
+  border-radius: 14px;
+}
+
+.dark .msg {
+  background: #222732;
+}
+
+.light .msg {
+  background: #e8edf7;
+}
+
+.msg.user {
+  border-inline-start: 3px solid #7db7ff;
+}
+
+.msg.assistant {
+  border-inline-start: 3px solid #86ecbc;
+}
+
+.msg p {
+  margin: 0.25rem 0 0;
+  line-height: 1.5;
+}
+
+.quick-prompts {
+  display: flex;
+  gap: 0.45rem;
+  overflow: auto;
+  padding: 0.2rem 0.05rem 0.65rem;
+}
+
+.quick-prompts button {
+  white-space: nowrap;
+  width: auto;
+  font-size: 0.84rem;
+  padding: 0.5rem 0.68rem;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 0.45rem;
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  padding: 0.45rem;
+  border-radius: 999px;
+}
+
+.dark .composer {
+  background: rgba(27, 31, 39, 0.97);
+  border: 1px solid #343a46;
+}
+
+.light .composer {
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid #ced6e1;
+}
+
+.icon-btn,
+.send-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.composer input {
+  border-radius: 999px;
+}
+
+button {
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:disabled,
+input:disabled,
+select:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+@media (min-width: 860px) {
+  .app {
+    padding: 1.2rem;
+  }
+
+  .topbar,
+  .register-box,
+  .bridge-box,
+  .chat-shell {
+    padding: 1.1rem;
+  }
+
+  .title-wrap h1 {
+    font-size: 1.65rem;
+  }
+
+  .register-form,
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .messages {
+    max-height: 46vh;
+  }
+}

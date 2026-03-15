@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MODE="${1:-up}"
+
+if [[ "$MODE" == "up" ]]; then
+  export PORT="${PORT:-8787}"
+  export DB_FILE="${DB_FILE:-data/dev.db.json}"
+  export CORS_ORIGIN="${CORS_ORIGIN:-*}"
+
+  echo "[dev] starting backend on :$PORT (DB_FILE=$DB_FILE)"
+  npm --workspace backend run dev &
+  BACK_PID=$!
+
+  trap 'kill $BACK_PID 2>/dev/null || true' EXIT
+
+  echo "[dev] starting frontend on :5173"
+  npm --workspace frontend run dev -- --host 0.0.0.0 --port 5173
+elif [[ "$MODE" == "check" ]]; then
+  export PORT="${PORT:-8787}"
+  export DB_FILE="${DB_FILE:-data/dev-check.db.json}"
+
+  echo "[dev] health check + registration check"
+  node backend/src/server.js > /tmp/flix-backend-check.log 2>&1 &
+  BACK_PID=$!
+  sleep 1
+
+  curl -fsS "http://localhost:${PORT}/api/health"
+  curl -fsS -X POST "http://localhost:${PORT}/api/auth/register" -H 'Content-Type: application/json' -d '{"name":"Dev User","email":"dev@example.com"}'
+
+  kill "$BACK_PID" 2>/dev/null || true
+  wait "$BACK_PID" 2>/dev/null || true
+  echo "[dev] checks passed"
+else
+  echo "Usage: ./.dev [up|check]"
+  exit 1
+fi
