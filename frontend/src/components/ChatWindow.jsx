@@ -1,143 +1,104 @@
-import { useEffect, useState } from 'react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8787';
+useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
 
 const quickPrompts = {
-  ar: ['تحسين الأمر', 'شرح الخطأ', 'سكريبت نشر مجاني', 'تحويل وصف إلى Bash'],
-  en: ['Improve command', 'Explain error', 'Free deploy script', 'Convert brief to Bash']
-};
-
-const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787';
-
-export default function ChatWindow({ t, language, provider, model, localMode, userId }) {
   ar: [
     'تحسين صياغة الأمر',
     'شرح خطأ الطرفية',
-    'اقتراح سكربت للنشر المجاني',
+    'سكريبت نشر مجاني على Vercel',
     'تحويل نص عربي إلى أوامر Bash'
   ],
   en: [
-    'Improve this command prompt',
+    'Improve this command',
     'Explain terminal error',
-    'Suggest free deploy script',
+    'Free deploy script to Vercel',
     'Convert plain text to Bash'
   ]
-};
+}
 
-export default function ChatWindow({ t, language, provider, model, localMode, user }) {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function ChatWindow({ t, language, provider, model, localMode, session }) {
+  const [messages, setMessages] = useState([])
+  const [input,    setInput]    = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const bottomRef = useRef(null)
 
-  const onSend = async (event) => {
-    event.preventDefault();
-    const clean = input.trim();
-    if (!clean) return;
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
 
-    setMessages((prev) => [...prev, { role: 'user', text: clean }]);
-    setInput('');
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${apiBase}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: clean,
-          provider,
-          model,
-          localMode,
-          userId: userId || 'anonymous'
-        })
-      });
-
-      const data = await response.json();
-      const reply = data.output || t.demoReply;
-      const meta = data.persisted ? '✓ DB' : `⚠ ${data.persistenceMessage || 'No DB'}`;
-      setMessages((prev) => [...prev, { role: 'assistant', text: `${reply} (${meta})` }]);
-    } catch (_error) {
-      setMessages((prev) => [...prev, { role: 'assistant', text: t.networkError }]);
-    } finally {
-      setLoading(false);
-    }
-  const pushPrompt = (prompt) => {
-    setInput(prompt);
-  };
+  const addMsg = (role, text) =>
+    setMessages((prev) => [...prev, { role, text }])
 
   const onSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || !user) return;
+    e.preventDefault()
+    const clean = input.trim()
+    if (!clean || loading) return
 
-    const userText = input.trim();
-    setMessages((prev) => [...prev, { role: 'user', text: userText }]);
-    setInput('');
-    setLoading(true);
+    addMsg('user', clean)
+    setInput('')
+    setLoading(true)
 
     try {
-      const response = await fetch(`${API_BASE}/api/chat`, {
+      const endpoint = import.meta.env.VITE_SUPABASE_URL
+        ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`
+        : `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8787'}/api/chat`
+
+      const headers = { 'Content-Type': 'application/json' }
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+
+      const res  = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user.id
-        },
-        body: JSON.stringify({ message: userText, provider, model, localMode })
-      });
+        headers,
+        body: JSON.stringify({ message: clean, provider, model, localMode })
+      })
 
-      if (!response.ok) throw new Error('chat_request_failed');
-
-      const data = await response.json();
-      const runtimeHint = localMode
-        ? language === 'ar'
-          ? 'تشغيل محلي.'
-          : 'Local mode.'
-        : language === 'ar'
-          ? 'تشغيل سحابي.'
-          : 'Cloud mode.';
-
-      setMessages((prev) => [...prev, { role: 'assistant', text: `${t.demoReply} ${runtimeHint} ${data.output}` }]);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const meta = data.persisted ? '✓ محفوظ' : session ? '⚠ لم يُحفظ' : '— بدون حساب'
+      addMsg('assistant', `${data.output}  (${meta})`)
     } catch {
-      setMessages((prev) => [...prev, { role: 'assistant', text: t.registerError }]);
+      addMsg('assistant', t.networkError)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <section className="chat-shell">
       <div className="messages">
-        {messages.map((message, index) => (
-          <article key={`${message.role}-${index}`} className={`msg ${message.role}`}>
-            <strong>{message.role === 'user' ? 'You' : 'FlixCod'}</strong>
-            <p>{message.text}</p>
+        {messages.length === 0 && (
+          <p className="empty-hint">
+            {language === 'ar' ? '💬 ابدأ بكتابة سؤالك...' : '💬 Start typing your question...'}
+          </p>
+        )}
+        {messages.map((msg, i) => (
+          <article key={i} className={`msg ${msg.role}`}>
+            <strong>{msg.role === 'user' ? '👤' : '⚡ FlixCod'}</strong>
+            <p>{msg.text}</p>
           </article>
         ))}
-        {loading ? <p className="status">{t.statusProcessing}</p> : null}
+        {loading && <p className="status-processing">⏳ {t.statusProcessing}</p>}
+        <div ref={bottomRef} />
       </div>
 
       <div className="quick-prompts">
-        {quickPrompts[language].map((prompt) => (
-          <button type="button" key={prompt} onClick={() => setInput(prompt)}>
-          <button type="button" key={prompt} onClick={() => pushPrompt(prompt)}>
-            {prompt}
-          </button>
+        {quickPrompts[language].map((p) => (
+          <button key={p} type="button" onClick={() => setInput(p)}>{p}</button>
         ))}
       </div>
 
       <form onSubmit={onSend} className="composer">
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.chatPlaceholder} />
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={user ? t.chatPlaceholder : t.requiredToUseTools}
-          disabled={!user}
+          placeholder={t.chatPlaceholder}
+          disabled={loading}
         />
-        <button type="button" className="icon-btn" disabled>
-          🎤
-        </button>
-        <button type="submit" className="send-btn" disabled={!user || loading}>
-          ↑
-        </button>
+        <button type="button" className="icon-btn" disabled title="Voice — coming soon">🎤</button>
+        <button type="submit" className="send-btn" disabled={!input.trim() || loading}>↑</button>
       </form>
     </section>
-  );
+  )
 }
